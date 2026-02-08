@@ -21,7 +21,6 @@ from ml.model import (
     LinearRegressionModel, RidgeRegressionModel, 
     RandomForestModel, MLPModel
 )
-from ml.training import ModelTrainer
 
 
 def setup_page():
