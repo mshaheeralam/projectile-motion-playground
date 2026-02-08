@@ -16,7 +16,7 @@ from physics.projectile import ProjectileMotion
 from physics.air_drag import ProjectileWithDrag, DragModel
 from physics.constants import G, DRAG_COEFFICIENTS, AIR_DENSITY
 from simulation.engine import SimulationEngine, SimulationConfig, SolutionMethod
-from simulation.data_generator import DataGenerator
+from simulation.data_generator import DatasetGenerator
 from ml.model import (
     LinearRegressionModel, RidgeRegressionModel, 
     RandomForestModel, MLPModel
@@ -322,27 +322,28 @@ def ml_comparison_section():
     
     if st.button("🚀 Train & Compare Models"):
         with st.spinner("Generating training data..."):
-            generator = DataGenerator()
+            from simulation.data_generator import DatasetConfig
             
-            if include_drag:
-                df = generator.generate_dataset(
-                    n_samples=n_samples,
-                    drag_model=DragModel.QUADRATIC
-                )
-            else:
-                df = generator.generate_dataset(
-                    n_samples=n_samples,
-                    drag_model=DragModel.NONE
-                )
+            config = DatasetConfig(
+                num_samples=n_samples,
+                include_no_drag=not include_drag,
+                include_linear_drag=False,
+                include_quadratic_drag=include_drag
+            )
+            generator = DatasetGenerator(config)
+            df = generator.generate(show_progress=False)
         
         st.success(f"Generated {len(df)} samples")
         
         # Prepare data
         feature_cols = ['v0', 'angle', 'mass']
+        
+        # Column names depend on drag setting
+        suffix = '_quad_drag' if include_drag else '_no_drag'
         target_map = {
-            "Range": "range",
-            "Max Height": "max_height", 
-            "Flight Time": "time_of_flight"
+            "Range": f"range{suffix}",
+            "Max Height": f"max_height{suffix}", 
+            "Flight Time": f"time_of_flight{suffix}"
         }
         target_col = target_map[target]
         

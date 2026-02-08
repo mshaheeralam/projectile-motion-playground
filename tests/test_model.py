@@ -13,7 +13,7 @@ from ml.model import (
     LinearRegressionModel, RidgeRegressionModel,
     RandomForestModel, MLPModel, ModelMetrics
 )
-from simulation.data_generator import DataGenerator
+from simulation.data_generator import DatasetGenerator, DatasetConfig
 from physics.air_drag import DragModel
 
 
@@ -200,15 +200,18 @@ class TestModelsWithPhysicsData:
     @pytest.fixture
     def physics_data(self):
         """Generate physics simulation data."""
-        generator = DataGenerator()
-        df = generator.generate_dataset(
-            n_samples=500,
-            drag_model=DragModel.QUADRATIC,
-            random_seed=42
+        config = DatasetConfig(
+            num_samples=500,
+            include_no_drag=False,
+            include_linear_drag=False,
+            include_quadratic_drag=True,
+            seed=42
         )
+        generator = DatasetGenerator(config)
+        df = generator.generate(show_progress=False)
         
         X = df[['v0', 'angle', 'mass']].values
-        y = df['range'].values
+        y = df['range_quad_drag'].values
         
         return X, y
     
