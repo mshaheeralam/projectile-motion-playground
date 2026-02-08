@@ -1,0 +1,4 @@
+NumPy
+Matplotlib
+torch
+streamlit
